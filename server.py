@@ -91,6 +91,26 @@ async def handle_identify_face(sid, base64_image):
         print(f"🚨 처리 중 오류 발생: {e}")
         await sio.emit('auth-fail', to=sid)
 
+@sio.on('command')
+async def handle_command(sid, data):
+    """
+    클라이언트(CommandScreen)에서 보낸 메시지를 처리하는 핸들러
+    data 구조: {'userId': '...', 'text': '...'}
+    """
+    print(f"📩 메시지 수신 ({sid}): {data}")
+
+    # 클라이언트가 보낸 텍스트 내용 가져오기
+    user_text = data.get('text', '')
+
+    # 응답 메시지 준비 (클라이언트 인터페이스 CommandResponse 구조에 맞춤)
+    response_payload = {
+        "text": f"서버에서도 확인 완료: {user_text}"
+    }
+
+    # 클라이언트에게 'command-response' 이벤트로 응답 전송
+    await sio.emit('command-response', response_payload, to=sid)
+    print(f"📤 응답 전송 완료: {response_payload['text']}")
+
 
 # --- 5. Uvicorn 서버 실행 ---
 if __name__ == "__main__":
